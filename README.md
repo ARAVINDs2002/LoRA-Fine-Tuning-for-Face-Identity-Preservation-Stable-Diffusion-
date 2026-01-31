@@ -148,7 +148,14 @@ These images show variations in lighting, angle, and expression.
 </table>
 
 These images are shared only to illustrate the type of data used for training.
+
 ---
+
+## Prompt Configuration
+
+The following prompt and negative prompt were used for all image generations:
+
+```python
 # Prompt used for all image generations
 # This prompt is designed to preserve my facial identity
 # by emphasizing consistent facial structure and realistic photography traits.
@@ -167,6 +174,7 @@ negative_prompt = (
     "cartoon, anime, illustration, painting, blurry, "
     "distorted face, extra fingers, bad anatomy, bad eyes"
 )
+```
 
 ---
 
@@ -262,4 +270,5 @@ The strongest identity preservation was observed between **30 and 50 epochs**.
 ## License
 
 This project is for educational and research purposes only.
+
 

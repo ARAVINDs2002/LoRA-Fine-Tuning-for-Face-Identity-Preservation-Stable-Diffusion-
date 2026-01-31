@@ -1,32 +1,32 @@
-# LoRA Fine-Tuning for Face Identity Preservation (Stable Diffusion)
+# My First LoRA Fine-Tuning Experiment (Trying to Generate My Own Face!)
 
-## Overview
+## What's This All About?
 
-This project focuses on my first try on fine-tuning a Stable Diffusion model using **LoRA** to generate images of a **specific real person** (myself), while preserving facial identity as much as possible.
+So this is basically my first attempt at fine-tuning a Stable Diffusion model using **LoRA** to generate images of myself. The whole point was to see if I could teach the model what my face looks like and then generate new photos of me.
 
-The goal was not just image generation, but to **measure identity preservation using numeric evaluation**, instead of relying only on visual inspection.
+But I didn't just want to eyeball it and say "yeah that kinda looks like me" — I actually wanted to measure it with numbers to see how well it really worked.
 
 ---
 
-## Base Model
+## What I Used
 
 - **Model:** Stable Diffusion v1.5  
 - **Source:** runwayml/stable-diffusion-v1-5  
 - **Framework:** Hugging Face Diffusers  
-- **Hardware:** RTX 3050 (6GB VRAM)
+- **Hardware:** RTX 3050 (6GB VRAM) — yeah, working with what I got!
 
 ---
 
-## Dataset
+## The Training Data
 
-- Around **30 real images** of the same person
-- Realistic photos with:
-  - Natural lighting
-  - Different angles
+I basically grabbed around **30 photos** of myself with:
+  - Different lighting conditions
+  - Various angles
   - Different facial expressions
-- Images stored in a single folder (no class labels)
 
-**Example structure:**
+Just threw them all in a folder, nothing fancy.
+
+**Folder structure looked like this:**
 
 ```
 lora_dataset/aravind/
@@ -38,21 +38,23 @@ lora_dataset/aravind/
 
 ---
 
-## LoRA Fine-Tuning Setup
+## Training Setup
+
+Here's what I went with for the LoRA training:
 
 - **Training method:** LoRA (Low-Rank Adaptation)
 - **Resolution:** 512 × 512
-- **Batch size:** 1 (GPU memory limitation)
+- **Batch size:** 1 (my GPU isn't exactly a beast lol)
 - **Rank:** 8
 - **Mixed precision:** FP16
-- **Optimizer:** Default Diffusers setup
-- **Seed:** Fixed for reproducibility
+- **Optimizer:** Just used the default Diffusers setup
+- **Seed:** Kept it fixed so I could actually compare results
 
 ---
 
-## Experiments (Epoch-wise Training)
+## The Experiments
 
-The same dataset was trained multiple times using different epoch values:
+I trained the same dataset multiple times with different epochs to see what works best:
 
 - **exp_e10** → 10 epochs  
 - **exp_e20** → 20 epochs  
@@ -60,19 +62,19 @@ The same dataset was trained multiple times using different epoch values:
 - **exp_e40** → 40 epochs  
 - **exp_e50** → 50 epochs  
 
-Each experiment produced a separate LoRA weights file (`.safetensors`).
+Each one gave me a different LoRA weights file (`.safetensors`).
 
 ---
 
-## Image Generation
+## Generating Images
 
-For each trained LoRA:
+For each trained model:
 
-- Images were generated using the **same prompt**
-- **Same seed (1236)** was used across all experiments for fair comparison
-- Portrait-style images were generated (512 × 768)
+- Used the **exact same prompt** every time
+- Used the **same seed (1236)** for fair comparison
+- Generated portrait-style images (512 × 768)
 
-**Directory structure:**
+**My folder setup:**
 
 ```
 generated_images/
@@ -83,14 +85,13 @@ generated_images/
 └── exp_e50/
 ```
 
-Only **one representative image per experiment** is shared below for visual reference.  
-Batch image outputs are not included — only the final numeric evaluation results.
+I'm just showing one image from each experiment here for comparison.  
+The full batch results are in the numbers table below.
 
 ---
-## Generated Image Results
+## Generated Results
 
-All images below were generated using the **same prompt and the same seed (1236)**  
-This ensures a fair comparison across different training epochs.
+All these images were made with the **same prompt and same seed (1236)** so you can actually compare them fairly.
 
 <table>
   <tr>
@@ -119,13 +120,12 @@ This ensures a fair comparison across different training epochs.
   </tr>
 </table>
 
-Only **one representative image per experiment** is shown here for visual comparison.  
-Batch outputs are evaluated numerically and reported in the results table below.
+---
 
-## Training Data (Sample Images)
+## My Training Photos (Just Some Samples)
 
-Below are a few **sample images from the real dataset** used to fine-tune the LoRA.  
-These images show variations in lighting, angle, and expression.
+Here are a few of the actual photos I used to train the model.  
+You can see they've got different lighting, angles, and expressions.
 
 <table>
   <tr>
@@ -147,19 +147,14 @@ These images show variations in lighting, angle, and expression.
   </tr>
 </table>
 
-These images are shared only to illustrate the type of data used for training.
-
 ---
 
-## Prompt Configuration
+## The Prompt I Used
 
-The following prompt and negative prompt were used for all image generations:
+Here's what I used to generate all the images:
 
 ```python
-# Prompt used for all image generations
-# This prompt is designed to preserve my facial identity
-# by emphasizing consistent facial structure and realistic photography traits.
-
+# My prompt - tried to be really specific about facial features
 prompt = (
     "portrait photo of <aravind-person>, "
     "same facial structure, same jawline, same eye spacing, same nose shape, "
@@ -167,9 +162,7 @@ prompt = (
     "DSLR photo, 85mm lens, natural lighting"
 )
 
-# Negative prompt used to avoid common generation issues
-# This helps reduce distortions, unrealistic styles, and anatomy errors.
-
+# Negative prompt to avoid weird artifacts
 negative_prompt = (
     "cartoon, anime, illustration, painting, blurry, "
     "distorted face, extra fingers, bad anatomy, bad eyes"
@@ -178,52 +171,50 @@ negative_prompt = (
 
 ---
 
-## Why Numeric Evaluation Was Used
+## Why I Didn't Just Trust My Eyes
 
-Visual inspection alone is subjective.
+Looking at images and saying "yeah that's me" is super subjective, right?
 
-Although Stable Diffusion operates in latent space, **identity is not explicitly disentangled** there.  
-Because of this, direct latent comparison is not reliable for identity evaluation.
+Even though Stable Diffusion works in this thing called latent space, **faces aren't really separated out in a way that makes them easy to compare** there. So just comparing the latent outputs wouldn't really tell me if the face looks like me.
 
-To address this, a **face recognition embedding model** was used to provide objective, numeric results.
+Instead, I used a **face recognition model** to get actual numbers. Way more objective.
 
 ---
 
-## Face Similarity Evaluation (Primary Method)
+## How I Measured Face Similarity
 
-### Model Used
+### The Model
 
-- **ArcFace**
-- Widely used in face verification and identity recognition systems
+- **ArcFace** — it's a pretty popular face recognition model used in real verification systems
 
-### Metric
+### The Metric
 
 - **Cosine similarity**  
 - **Range:** 0 to 1  
-  - Higher value = more similar facial identity
+  - Higher number = faces are more similar
 
 ---
 
-## Batch Image Face Similarity (Main Evaluation)
+## How I Actually Evaluated It
 
-To reduce randomness from generation seeds, **batch-based evaluation** was used as the primary metric.
+Just using one random seed wouldn't be fair, so I did a **batch evaluation**:
 
-**Process:**
+**Here's what I did:**
 
-1. Generate **10 images per experiment**
+1. Generated **10 images for each experiment**
 2. For each generated image:
-   - Compare it with all real images
-   - Keep the best similarity score
-3. Aggregate results across the batch:
+   - Compared it with all my real photos
+   - Kept the highest similarity score
+3. Then looked at the batch stats:
    - Average similarity
    - Minimum similarity
    - Maximum similarity
 
-This approach provides a more stable and realistic measurement of identity preservation.
+This gives a much better idea of how well it's actually working.
 
 ---
 
-## Batch Face Similarity Results
+## The Results
 
 | Experiment | Avg Similarity | Min   | Max   |
 |------------|----------------|-------|-------|
@@ -233,37 +224,45 @@ This approach provides a more stable and realistic measurement of identity prese
 | exp_e40    | 0.510          | 0.223 | 0.978 |
 | exp_e50    | **0.573**      | 0.373 | 0.703 |
 
-The strongest identity preservation was observed between **30 and 50 epochs**.
+Best results were around **30-50 epochs**.
 
 ---
 
-## Observations
+## What I Learned
 
-- Too few epochs → identity not learned sufficiently
-- Too many epochs → overfitting or facial distortion
-- Certain seeds produce significantly better identity matches
-- LoRA learns identity patterns, not exact face replication
-- Generative models may hallucinate due to:
-  - Random sampling
-  - Prompt influence
-  - Limited training data
-
----
-
-## Conclusion
-
-- LoRA fine-tuning can partially preserve facial identity
-- Batch-based ArcFace cosine similarity provides a reliable numeric evaluation
-- Best results were achieved around **30–50 epochs**
-- Numeric evaluation combined with visual inspection gives the clearest understanding
+- Not enough training → the model doesn't really learn my face
+- Too much training → things start getting weird and distorted
+- Some random seeds just work way better than others
+- LoRA doesn't copy your face exactly — it learns patterns
+- The model can still make stuff up because of:
+  - How random generation works
+  - What's in the prompt
+  - Limited training photos
 
 ---
 
-## Notes
+## Bottom Line
 
-- This project is for research and learning purposes only
-- Generated images are not intended for impersonation or misuse
-- Evaluation methods follow commonly accepted industry practices
+- LoRA can kinda preserve facial identity, but it's not perfect
+- Using ArcFace with cosine similarity gave me solid numbers to work with
+- Sweet spot was around **30–50 epochs**
+- Numbers + eyeballing = best way to evaluate
+
+---
+
+## Just So You Know
+
+- This is purely for learning and research
+- Not trying to impersonate anyone or do anything shady
+- The evaluation methods I used are pretty standard in the industry
+
+---
+
+## A Personal Note
+
+I know these images don't really look like me... lol. But honestly, I know what I can do to make it better! This result was what I expected with just 30 images and 50 epochs, and I genuinely learned a ton while doing this project. It was my first time doing something like this after my research in deepfake video detection. 
+
+Thanks so much for checking this out! 🙏
 
 ---
 
